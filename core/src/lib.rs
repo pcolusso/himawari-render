@@ -1,8 +1,11 @@
-use serde::{Deserialize};
 use std::error::Error;
 use std::thread;
 use std::sync::mpsc::channel;
+use std::ffi::{CStr, CString};
+use std::os::raw::c_char;
+
 use chrono::DateTime;
+use serde::{Deserialize};
 use image::{DynamicImage, GenericImage, ImageBuffer, ImageFormat, RgbaImage};
 use simple_error::SimpleError;
 
@@ -10,6 +13,23 @@ use simple_error::SimpleError;
 pub extern fn just_do_it() {
     let planet = assemble(4);
     planet.unwrap().save("out.png");
+}
+
+#[no_mangle]
+pub extern fn save_planet(path_ref: *const c_char, level: u32) -> *const u8 {
+    //let planet = assemble(level);
+    let path_cstr = unsafe { CStr::from_ptr(path_ref) };
+
+    let result = path_cstr.to_str().and_then( |path| {
+        Ok(assemble(level).and_then( |rendered_image| {
+            Ok(rendered_image.save(path))
+        }))
+    });
+
+    match result {
+        Ok(s) => return CString::new("All good").unwrap().as_ptr() as *const u8,
+        Err(e) => return CString::new("Failed...").unwrap().as_ptr() as *const u8,
+    }
 }
 
 #[derive(Deserialize, Debug)]

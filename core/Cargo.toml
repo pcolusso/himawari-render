@@ -14,3 +14,4 @@ image = "0.21.1"
 [lib]
 name = "himawari_render"
 crate-type = ["staticlib", "cdylib"]
+src = "src/lib.rs"
