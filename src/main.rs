@@ -1,5 +1,7 @@
 use serde::{Deserialize};
 use std::error::Error;
+use std::thread;
+use std::sync::mpsc::channel;
 use chrono::DateTime;
 use image::{DynamicImage, GenericImage, ImageBuffer, ImageFormat, RgbaImage};
 
@@ -25,6 +27,12 @@ fn get_tile(time: DateTime<chrono::offset::FixedOffset>, size: u32, level: u32, 
     Ok(image)
 }
 
+struct Tile {
+    image: DynamicImage,
+    x: u32,
+    y: u32
+}
+
 fn assemble(level: u32) -> Result<RgbaImage, Box<Error>> {
     let mut query_latest = reqwest::get("http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json")?;
     let payload: LatestPayload = query_latest.json()?;
@@ -36,31 +44,32 @@ fn assemble(level: u32) -> Result<RgbaImage, Box<Error>> {
     let render_height = level * tile_height;
     //TODO: Verify level is one of the following 4, 8, 16, 20
 
-    let mut tiles: Vec<DynamicImage> = vec![];
     let mut render: RgbaImage = ImageBuffer::new(render_width, render_height);
+    let (sender, receiver) = channel();
 
     // TODO: mmmmultithread
     for x in 0..level {
         for y in 0..level {
-            //TODO: retries
-            let image = get_tile(time, tile_width, level, x, y);
-            tiles.push(image.unwrap());
+            let tx = sender.clone();
+            thread::spawn(move || {
+                let image = get_tile(time, tile_width, level, x, y).unwrap();
+                let data = Tile{ image: image, x: x, y: y};
+                tx.send(data).unwrap();
+                drop(&tx);
+                print!("Thread closed.");
+            });
+            
             println!("Downloaded image for {},{}", x, y);
         }
     }
-
-    tiles.reverse();
-
-    //TODO: Could this be done without the vec?
     
+    drop(sender);
 
-    for x in 0..level {
-        for y in 0..level {
-            let x_pixel = x * tile_width;
-            let y_pixel = y * tile_height;
-            println!("Copying for {},{}. Starting from {},{}.", x, y, x_pixel, y_pixel);
-            render.copy_from(&tiles.pop().unwrap(), x_pixel, y_pixel );
-        }
+    for tile in receiver {
+        let x_pixel = tile.x * tile_width;
+        let y_pixel = tile.y * tile_height;
+        render.copy_from(&tile.image, x_pixel, y_pixel );
+        println!("Copying for {},{}. Starting from {},{}.", tile.x, tile.y, x_pixel, y_pixel);
     }
 
     Ok(render)
