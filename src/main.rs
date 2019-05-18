@@ -4,6 +4,7 @@ use std::thread;
 use std::sync::mpsc::channel;
 use chrono::DateTime;
 use image::{DynamicImage, GenericImage, ImageBuffer, ImageFormat, RgbaImage};
+use simple_error::SimpleError;
 
 
 fn main() {
@@ -19,12 +20,23 @@ struct LatestPayload {
 
 //TODO: Add retries here.
 fn get_tile(time: DateTime<chrono::offset::FixedOffset>, size: u32, level: u32, x: u32, y: u32) -> Result<DynamicImage, Box<Error>> {
+    let mut retries = 3;
     let base_url = format!("http://himawari8.nict.go.jp/img/D531106/{}d/{}/{}_{}_{}.png", level, size, time.format("%Y/%m/%d/%H%M%S"), x, y);
-    let mut response = reqwest::get(&base_url)?;
-    let mut buf: Vec<u8> = vec![];
-    response.copy_to(&mut buf)?;
-    let image = image::load_from_memory_with_format(&buf, ImageFormat::PNG)?;
-    Ok(image)
+
+    while retries > 0 {
+        if let Ok(response) = reqwest::get(&base_url) {
+            let mut response = reqwest::get(&base_url)?;
+            let mut buf: Vec<u8> = vec![];
+            response.copy_to(&mut buf)?;
+            let image = image::load_from_memory_with_format(&buf, ImageFormat::PNG)?;
+            return Ok(image);
+        } else {
+            println!("Issue retrieving image, trying again.");
+            retries = retries - 1;
+        }
+    }
+
+    Err(Box::new(SimpleError::new("Failed to grab tile from the API.")))
 }
 
 struct Tile {
@@ -55,15 +67,12 @@ fn assemble(level: u32) -> Result<RgbaImage, Box<Error>> {
                 let image = get_tile(time, tile_width, level, x, y).unwrap();
                 let data = Tile{ image: image, x: x, y: y};
                 tx.send(data).unwrap();
-                drop(&tx);
-                print!("Thread closed.");
+                println!("Downloaded image for {},{}", x, y);
             });
-            
-            println!("Downloaded image for {},{}", x, y);
         }
     }
-    
-    drop(sender);
+
+    drop(sender); //Once all senders are dropped, the iter for the loop below will end.
 
     for tile in receiver {
         let x_pixel = tile.x * tile_width;
