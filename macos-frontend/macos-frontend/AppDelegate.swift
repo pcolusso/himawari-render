@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import Wallpaper
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -44,6 +45,7 @@ let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLen
         // Appears macOS gets the simulated res for Retina displays...
         wallpaper_pls(pathBuf, UInt32(firstScreen.visibleFrame.width), UInt32(firstScreen.visibleFrame.height))
         
+        try! Wallpaper.set(targetPath, screen: .main, scale: .fill)
     }
     
     func constructMenu() {
