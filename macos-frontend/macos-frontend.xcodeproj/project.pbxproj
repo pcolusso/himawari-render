@@ -13,6 +13,7 @@
 		EC72C04A228FDED1007646CF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC72C048228FDED1007646CF /* Main.storyboard */; };
 		EC72C054228FDF95007646CF /* libhimawari_render.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EC72C053228FDF95007646CF /* libhimawari_render.a */; };
 		EC72C056228FDFA2007646CF /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EC72C055228FDFA2007646CF /* libresolv.tbd */; };
+		ECF6399322916AAD009F9ADF /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF6399222916AAD009F9ADF /* Package.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		EC72C055228FDFA2007646CF /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		EC72C057228FE000007646CF /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		EC72C058228FE0F4007646CF /* himawari_render.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = himawari_render.h; path = ../../core/src/himawari_render.h; sourceTree = "<group>"; };
+		ECF6399222916AAD009F9ADF /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +47,7 @@
 		EC72C036228FDED0007646CF = {
 			isa = PBXGroup;
 			children = (
+				ECF6399222916AAD009F9ADF /* Package.swift */,
 				EC72C041228FDED0007646CF /* macos-frontend */,
 				EC72C040228FDED0007646CF /* Products */,
 				EC72C052228FDF94007646CF /* Frameworks */,
@@ -158,6 +161,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ECF6399322916AAD009F9ADF /* Package.swift in Sources */,
 				EC72C045228FDED0007646CF /* ViewController.swift in Sources */,
 				EC72C043228FDED0007646CF /* AppDelegate.swift in Sources */,
 			);
@@ -304,7 +308,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				"LIBRARY_SEARCH_PATHS[arch=*]" = "$(PROJECT_DIR)/../core/target/release/";
+				"LIBRARY_SEARCH_PATHS[arch=*]" = "$(PROJECT_DIR)/../core/target/debug/";
 				PRODUCT_BUNDLE_IDENTIFIER = "pcolusso.macos-frontend";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				"SWIFT_OBJC_BRIDGING_HEADER[arch=*]" = "$(PROJECT_DIR)/macos-frontend/Bridging-Header.h";

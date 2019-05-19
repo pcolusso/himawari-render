@@ -83,7 +83,7 @@ pub fn assemble(level: u32) -> Result<RgbaImage, Box<Error>> {
     Ok(render)
 }
 
-pub fn render_wallpaper(width: u32, height: u32) {
+pub fn render_wallpaper(path: &str, width: u32, height: u32) {
     let render = assemble(4).unwrap();
     let offset = (width - height) / 2;
     let mut wallpaper:RgbaImage = ImageBuffer::new(width, height);
@@ -97,5 +97,6 @@ pub fn render_wallpaper(width: u32, height: u32) {
     let copied = wallpaper.copy_from(&resized, offset, 0);
     
     println!("Copy to wallpaper was successfull: {:?}; offset: {:?}", copied, offset);
-    wallpaper.save("thing.png");
+    println!("Target path: {}", path);
+    wallpaper.save(path);
 }
