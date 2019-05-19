@@ -14,4 +14,4 @@ lib = ctypes.cdll.LoadLibrary('target/debug/' + lib_names.get(platform.system())
 # print(result)
 
 lib.wallpaper_pls.argtypes = (ctypes.c_char_p, ctypes.c_uint, ctypes.c_uint)
-lib.wallpaper_pls(b"here.png", 1920, 1080)
+lib.wallpaper_pls(b"here.png", 1920, 1200)
