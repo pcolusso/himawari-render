@@ -14,7 +14,25 @@
 		EC72C054228FDF95007646CF /* libhimawari_render.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EC72C053228FDF95007646CF /* libhimawari_render.a */; };
 		EC72C056228FDFA2007646CF /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EC72C055228FDFA2007646CF /* libresolv.tbd */; };
 		ECF6399322916AAD009F9ADF /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF6399222916AAD009F9ADF /* Package.swift */; };
+		ECF639A322916E94009F9ADF /* dependencies.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECF6399E22916E78009F9ADF /* dependencies.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ECF6399D22916E78009F9ADF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECF6399622916E78009F9ADF /* dependencies.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = "dependencies::dependencies::Product";
+			remoteInfo = dependencies;
+		};
+		ECF6399F22916E78009F9ADF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECF6399622916E78009F9ADF /* dependencies.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = "dependencies::dependenciesTests::Product";
+			remoteInfo = dependenciesTests;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		EC72C03F228FDED0007646CF /* macos-frontend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "macos-frontend.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -29,6 +47,7 @@
 		EC72C057228FE000007646CF /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		EC72C058228FE0F4007646CF /* himawari_render.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = himawari_render.h; path = ../../core/src/himawari_render.h; sourceTree = "<group>"; };
 		ECF6399222916AAD009F9ADF /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		ECF6399622916E78009F9ADF /* dependencies.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = dependencies.xcodeproj; path = dependencies/dependencies.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ECF639A322916E94009F9ADF /* dependencies.framework in Frameworks */,
 				EC72C056228FDFA2007646CF /* libresolv.tbd in Frameworks */,
 				EC72C054228FDF95007646CF /* libhimawari_render.a in Frameworks */,
 			);
@@ -47,6 +67,7 @@
 		EC72C036228FDED0007646CF = {
 			isa = PBXGroup;
 			children = (
+				ECF6399622916E78009F9ADF /* dependencies.xcodeproj */,
 				ECF6399222916AAD009F9ADF /* Package.swift */,
 				EC72C041228FDED0007646CF /* macos-frontend */,
 				EC72C040228FDED0007646CF /* Products */,
@@ -84,6 +105,15 @@
 				EC72C053228FDF95007646CF /* libhimawari_render.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		ECF6399722916E78009F9ADF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ECF6399E22916E78009F9ADF /* dependencies.framework */,
+				ECF639A022916E78009F9ADF /* dependenciesTests.xctest */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,12 +167,35 @@
 			mainGroup = EC72C036228FDED0007646CF;
 			productRefGroup = EC72C040228FDED0007646CF /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = ECF6399722916E78009F9ADF /* Products */;
+					ProjectRef = ECF6399622916E78009F9ADF /* dependencies.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				EC72C03E228FDED0007646CF /* macos-frontend */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		ECF6399E22916E78009F9ADF /* dependencies.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = dependencies.framework;
+			remoteRef = ECF6399D22916E78009F9ADF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		ECF639A022916E78009F9ADF /* dependenciesTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = file;
+			path = dependenciesTests.xctest;
+			remoteRef = ECF6399F22916E78009F9ADF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		EC72C03D228FDED0007646CF /* Resources */ = {
