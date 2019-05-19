@@ -8,6 +8,7 @@ use chrono::DateTime;
 use serde::{Deserialize};
 use image::{DynamicImage, GenericImage, ImageBuffer, ImageFormat, RgbaImage};
 use simple_error::SimpleError;
+use rayon::{ThreadPool, ThreadPoolBuilder};
 
 #[no_mangle]
 pub extern fn just_do_it() {
@@ -85,12 +86,13 @@ fn assemble(level: u32) -> Result<RgbaImage, Box<Error>> {
 
     let mut render: RgbaImage = ImageBuffer::new(render_width, render_height);
     let (sender, receiver) = channel();
+    let pool = ThreadPoolBuilder::new().num_threads(4).build().unwrap();
 
     // TODO: mmmmultithread
     for x in 0..level {
         for y in 0..level {
             let tx = sender.clone();
-            thread::spawn(move || {
+            pool.spawn(move || {
                 let image = get_tile(time, tile_width, level, x, y).unwrap();
                 let data = Tile{ image: image, x: x, y: y};
                 tx.send(data).unwrap();
