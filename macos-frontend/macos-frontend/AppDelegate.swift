@@ -26,17 +26,24 @@ let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLen
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
+    
+    func createAppDataDirectory() -> URL {
+        let applicationSupportPath = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+        let dataPath = applicationSupportPath!.appendingPathComponent("Himawari")
+        try! FileManager.default.createDirectory(atPath: dataPath.path, withIntermediateDirectories: true, attributes: nil)
+        
+        return dataPath
+    }
 
     @objc func refreshNow(_ sender: Any?) {
-        // TODO: Appears the file does not save. Restriction? Limitation of debug env?
-        let path = NSString("~/from-swift.png").utf8String
+        let targetPath = createAppDataDirectory().appendingPathComponent("latest_render.png")
+        let firstScreen = NSScreen.screens.first!
+        let path = NSString(string: targetPath.path).utf8String
         let pathBuf = UnsafeMutablePointer<Int8>(mutating: path)
-        let result = save_planet(pathBuf, 4)
         
-        if let returnCode = result {
-            let asString = String(cString: returnCode)
-            print(asString) // Result is invalid, so is the response from Python. Perhaps lib is free'ing the pointer before we can use it.
-        }
+        // Appears macOS gets the simulated res for Retina displays...
+        wallpaper_pls(pathBuf, UInt32(firstScreen.visibleFrame.width), UInt32(firstScreen.visibleFrame.height))
+        
     }
     
     func constructMenu() {

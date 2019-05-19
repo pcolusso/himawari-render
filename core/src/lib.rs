@@ -4,8 +4,9 @@ use std::os::raw::c_char;
 mod fetch;
 
 #[no_mangle]
-pub fn wallpaper_pls() {
-    fetch::render_wallpaper(3840, 2160);
+pub fn wallpaper_pls(path_ref: *const c_char, width: u32, height: u32) {
+    let path = unsafe { CStr::from_ptr(path_ref) }.to_str().unwrap();
+    fetch::render_wallpaper(&path, width, height);
 }
 
 #[no_mangle]
