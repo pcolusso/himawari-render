@@ -16,7 +16,7 @@ pub extern fn just_do_it() {
 }
 
 #[no_mangle]
-pub extern fn save_planet(path_ref: *const c_char, level: u32) -> *const u8 {
+pub extern fn save_planet(path_ref: *const c_char, level: u32) -> *const i8 {
     //let planet = assemble(level);
     let path_cstr = unsafe { CStr::from_ptr(path_ref) };
 
@@ -28,16 +28,15 @@ pub extern fn save_planet(path_ref: *const c_char, level: u32) -> *const u8 {
     });
 
 
-    match result {
-        Ok(s) => {
-            print!("Success");
-            return CString::new("All good").unwrap().as_ptr() as *const u8
-        },
-        Err(e) => {
-            print!("Issues; {}", e);
-            return CString::new("Failed...").unwrap().as_ptr() as *const u8
-        }
-    }
+    let code = CString::new(match result {
+        Ok(s) => "All Good",
+        Err(e) => "Erk"
+    }).unwrap();
+
+    let ptr = code.as_ptr();
+    std::mem::forget(code); //Leak the string
+
+    ptr
 }
 
 #[derive(Deserialize, Debug)]
