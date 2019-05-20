@@ -13,51 +13,9 @@
 		EC72C04A228FDED1007646CF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC72C048228FDED1007646CF /* Main.storyboard */; };
 		EC72C054228FDF95007646CF /* libhimawari_render.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EC72C053228FDF95007646CF /* libhimawari_render.a */; };
 		EC72C056228FDFA2007646CF /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = EC72C055228FDFA2007646CF /* libresolv.tbd */; };
-		ECD49768229172BC00677860 /* Wallpaper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECD49767229172BC00677860 /* Wallpaper.framework */; };
-		ECD4976A229172E500677860 /* SQLite.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECD49769229172E500677860 /* SQLite.framework */; };
-		ECD4976C229172E500677860 /* SQLiteObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECD4976B229172E500677860 /* SQLiteObjc.framework */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		EC11FCDC229173F700FB9614 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = EC11FCD0229173F700FB9614 /* dependencies.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = "SQLite.swift::SQLite::Product";
-			remoteInfo = SQLite;
-		};
-		EC11FCDE229173F700FB9614 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = EC11FCD0229173F700FB9614 /* dependencies.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = "SQLite.swift::SQLiteObjc::Product";
-			remoteInfo = SQLiteObjc;
-		};
-		EC11FCE0229173F700FB9614 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = EC11FCD0229173F700FB9614 /* dependencies.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = "Wallpaper::Wallpaper::Product";
-			remoteInfo = Wallpaper;
-		};
-		EC11FCE2229173F700FB9614 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = EC11FCD0229173F700FB9614 /* dependencies.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = "dependencies::dependencies::Product";
-			remoteInfo = dependencies;
-		};
-		EC11FCE4229173F700FB9614 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = EC11FCD0229173F700FB9614 /* dependencies.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = "dependencies::dependenciesTests::Product";
-			remoteInfo = dependenciesTests;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
-		EC11FCD0229173F700FB9614 /* dependencies.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = dependencies.xcodeproj; path = dependencies/dependencies.xcodeproj; sourceTree = "<group>"; };
 		EC72C03F228FDED0007646CF /* macos-frontend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "macos-frontend.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC72C042228FDED0007646CF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		EC72C044228FDED0007646CF /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -73,6 +31,7 @@
 		ECD49767229172BC00677860 /* Wallpaper.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Wallpaper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECD49769229172E500677860 /* SQLite.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SQLite.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECD4976B229172E500677860 /* SQLiteObjc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SQLiteObjc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECEF439E229277B1008C362D /* macos-frontend.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "macos-frontend.entitlements"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,9 +39,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ECD4976A229172E500677860 /* SQLite.framework in Frameworks */,
-				ECD4976C229172E500677860 /* SQLiteObjc.framework in Frameworks */,
-				ECD49768229172BC00677860 /* Wallpaper.framework in Frameworks */,
 				EC72C056228FDFA2007646CF /* libresolv.tbd in Frameworks */,
 				EC72C054228FDF95007646CF /* libhimawari_render.a in Frameworks */,
 			);
@@ -91,22 +47,9 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		EC11FCD1229173F700FB9614 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				EC11FCDD229173F700FB9614 /* SQLite.framework */,
-				EC11FCDF229173F700FB9614 /* SQLiteObjc.framework */,
-				EC11FCE1229173F700FB9614 /* Wallpaper.framework */,
-				EC11FCE3229173F700FB9614 /* dependencies.framework */,
-				EC11FCE5229173F700FB9614 /* dependenciesTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		EC72C036228FDED0007646CF = {
 			isa = PBXGroup;
 			children = (
-				EC11FCD0229173F700FB9614 /* dependencies.xcodeproj */,
 				EC72C041228FDED0007646CF /* macos-frontend */,
 				EC72C040228FDED0007646CF /* Products */,
 				EC72C052228FDF94007646CF /* Frameworks */,
@@ -124,6 +67,7 @@
 		EC72C041228FDED0007646CF /* macos-frontend */ = {
 			isa = PBXGroup;
 			children = (
+				ECEF439E229277B1008C362D /* macos-frontend.entitlements */,
 				EC72C058228FE0F4007646CF /* himawari_render.h */,
 				EC72C042228FDED0007646CF /* AppDelegate.swift */,
 				EC72C044228FDED0007646CF /* ViewController.swift */,
@@ -182,6 +126,9 @@
 					EC72C03E228FDED0007646CF = {
 						CreatedOnToolsVersion = 10.2.1;
 						SystemCapabilities = {
+							com.apple.HardenedRuntime = {
+								enabled = 1;
+							};
 							com.apple.Sandbox = {
 								enabled = 0;
 							};
@@ -200,56 +147,12 @@
 			mainGroup = EC72C036228FDED0007646CF;
 			productRefGroup = EC72C040228FDED0007646CF /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = EC11FCD1229173F700FB9614 /* Products */;
-					ProjectRef = EC11FCD0229173F700FB9614 /* dependencies.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				EC72C03E228FDED0007646CF /* macos-frontend */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		EC11FCDD229173F700FB9614 /* SQLite.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = SQLite.framework;
-			remoteRef = EC11FCDC229173F700FB9614 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		EC11FCDF229173F700FB9614 /* SQLiteObjc.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = SQLiteObjc.framework;
-			remoteRef = EC11FCDE229173F700FB9614 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		EC11FCE1229173F700FB9614 /* Wallpaper.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Wallpaper.framework;
-			remoteRef = EC11FCE0229173F700FB9614 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		EC11FCE3229173F700FB9614 /* dependencies.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = dependencies.framework;
-			remoteRef = EC11FCE2229173F700FB9614 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		EC11FCE5229173F700FB9614 /* dependenciesTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = file;
-			path = dependenciesTests.xctest;
-			remoteRef = EC11FCE4229173F700FB9614 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		EC72C03D228FDED0007646CF /* Resources */ = {
@@ -406,9 +309,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "macos-frontend/macos-frontend.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = KMCZBZDRGH;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "macos-frontend/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -426,9 +331,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "macos-frontend/macos-frontend.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = KMCZBZDRGH;
+				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "macos-frontend/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

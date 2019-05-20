@@ -7,12 +7,13 @@
 //
 
 import Cocoa
-import Wallpaper
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
 
-let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
+    let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLength)
+    let timer = Timer.scheduledTimer(timeInterval: 600, target: self, selector: #selector(AppDelegate.refreshNow(_:)), userInfo: nil, repeats: true)
+
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Insert code here to initialize your application
@@ -35,6 +36,19 @@ let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLen
         
         return dataPath
     }
+    
+    func setWallpaper(path: URL) {
+        let sharedWorkspace = NSWorkspace.shared
+        let screens = NSScreen.screens
+        let options: NSDictionary = [
+            "NSWorkspaceDesktopImageFillColorKey": NSColor.black,
+            //"NSWorkspaceDesktopImageScalingKey":, "",
+        ]
+        
+        for screen in screens{
+            try! sharedWorkspace.setDesktopImageURL(path, for: screen, options: options as! [NSWorkspace.DesktopImageOptionKey : Any])
+        }
+    }
 
     @objc func refreshNow(_ sender: Any?) {
         let targetPath = createAppDataDirectory().appendingPathComponent("latest_render.png")
@@ -44,8 +58,7 @@ let statusItem = NSStatusBar.system.statusItem(withLength:NSStatusItem.squareLen
         
         // Appears macOS gets the simulated res for Retina displays...
         wallpaper_pls(pathBuf, UInt32(firstScreen.visibleFrame.width), UInt32(firstScreen.visibleFrame.height))
-        
-        try! Wallpaper.set(targetPath, screen: .main, scale: .fill)
+        setWallpaper(path: targetPath)
     }
     
     func constructMenu() {
