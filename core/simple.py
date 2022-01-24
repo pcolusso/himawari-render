@@ -1,4 +1,3 @@
-from appscript import app, mactypes
 import ctypes, platform, time
 
 lib_names = {
@@ -13,5 +12,4 @@ fname = path + 'latest_render.png'
 
 while True:
   lib.wallpaper_pls(fname.encode(), 1920, 1200)
-  app('Finder').desktop_picture.set(mactypes.File(fname))
   time.sleep(10 * 60)
