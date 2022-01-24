@@ -16,4 +16,9 @@ futures = "0.3.19"
 
 [lib]
 name = "himawari_render"
-crate-type = ["staticlib", "cdylib"]
+path = "src/lib.rs"
+crate-type = ["staticlib", "rlib"]
+
+[[bin]]
+name = "himwari_cli"
+path = "src/bin.rs"

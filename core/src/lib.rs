@@ -1,30 +1,32 @@
-
-use std::{io::Cursor, str::FromStr};
-
-use chrono::{Duration, Utc, NaiveDate, NaiveDateTime, Datelike, Timelike};
-use anyhow::Result;
-use serde::Deserialize;
 use anyhow::anyhow;
-use tempdir::TempDir;
+use anyhow::Result;
+use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike, Utc};
 use futures::future::*;
-use image::{io::Reader as ImageReader, DynamicImage, ImageFormat, RgbImage, GenericImage, RgbaImage, imageops, GenericImageView};
 use futures::{stream, StreamExt};
-use std::path::PathBuf;
+use image::{
+    imageops, io::Reader as ImageReader, DynamicImage, GenericImage, GenericImageView, ImageFormat,
+    RgbaImage,
+};
+use serde::Deserialize;
+use tokio::runtime::Runtime;
+use std::ffi::CStr;
+use std::ffi::CString;
+use std::io::Cursor;
+use std::os::raw::c_char;
 
 const SIZE: u32 = 550;
 
-struct Options {
+pub struct Options {
     date: DateOptions,
     debug: bool,
     infrared: bool,
-    zoom: i32,
+    zoom: u32,
     timeout: Duration,
-    // temp: PathBuf
 }
 
-enum DateOptions { 
+pub enum DateOptions {
     Latest,
-    Date(chrono::DateTime<Utc>)
+    Date(chrono::DateTime<Utc>),
 }
 
 impl Default for Options {
@@ -33,9 +35,8 @@ impl Default for Options {
             date: DateOptions::Latest,
             debug: false,
             infrared: false,
-            zoom: 3,
+            zoom: 2,
             timeout: Duration::seconds(30),
-            // temp: TempDir::new("himawari").expect("Unable to create temp directory")
         }
     }
 }
@@ -43,7 +44,7 @@ impl Default for Options {
 #[derive(Deserialize, Debug)]
 struct Payload {
     date: String,
-    file: String
+    file: String,
 }
 
 struct Tile {
@@ -55,34 +56,46 @@ struct Tile {
 impl Options {
     fn level(&self) -> Result<(&str, u32)> {
         match (self.infrared, self.zoom) {
-            (true, 1)  => Ok(("1d", 1)),
-            (true, 2)  => Ok(("4d", 4)),
-            (true, 3)  => Ok(("8d", 8)),
+            (true, 1) => Ok(("1d", 1)),
+            (true, 2) => Ok(("4d", 4)),
+            (true, 3) => Ok(("8d", 8)),
             (false, 1) => Ok(("1d", 1)),
             (false, 2) => Ok(("4d", 4)),
             (false, 3) => Ok(("8d", 8)),
-            _ => Err(anyhow!("Invalid zoom level"))
+            _ => Err(anyhow!("Invalid zoom level")),
         }
     }
 
     async fn get_date(&self) -> Result<NaiveDateTime> {
-        let image_type = if self.infrared { "INFRARED_FULL" } else { "D531106" };
+        let image_type = if self.infrared {
+            "INFRARED_FULL"
+        } else {
+            "D531106"
+        };
         match &self.date {
             DateOptions::Latest => {
-                let url = format!("https://himawari8.nict.go.jp/img/{}/latest.json", image_type);
+                let url = format!(
+                    "https://himawari8.nict.go.jp/img/{}/latest.json",
+                    image_type
+                );
                 dbg!(&url);
-                let body = reqwest::get(url)
-                    .await?
-                    .json::<Payload>()
-                    .await?;
+                let body = reqwest::get(url).await?.json::<Payload>().await?;
                 dbg!(&body);
                 let payload_date = NaiveDateTime::parse_from_str(&body.date, "%Y-%m-%d %H:%M:%S")?;
-                let date = NaiveDate::from_ymd(payload_date.year(), payload_date.month(), payload_date.day())
-                    .and_hms(payload_date.hour(), payload_date.minute() - payload_date.minute() % 10, 0);
+                let date = NaiveDate::from_ymd(
+                    payload_date.year(),
+                    payload_date.month(),
+                    payload_date.day(),
+                )
+                .and_hms(
+                    payload_date.hour(),
+                    payload_date.minute() - payload_date.minute() % 10,
+                    0,
+                );
                 dbg!(&date);
                 Ok(date)
             }
-            DateOptions::Date(d) => unimplemented!()
+            DateOptions::Date(d) => unimplemented!(),
         }
     }
 
@@ -98,10 +111,11 @@ impl Options {
             &date.format("%Y").to_string(),
             &date.format("%m").to_string(),
             &date.format("%d").to_string(),
-            &date.format("%H%M%S").to_string()
-        ].join("/");
-        let mut urls = vec!();
-        let mut images = vec!();
+            &date.format("%H%M%S").to_string(),
+        ]
+        .join("/");
+        let mut urls = vec![];
+        let mut images = vec![];
 
         for x in 0..blocks {
             for y in 0..blocks {
@@ -119,9 +133,10 @@ impl Options {
                 let image = reader.decode()?;
                 let x = url.1;
                 let y = url.2;
-                Ok::<Tile, anyhow::Error>(Tile{ image, x, y})
+                Ok::<Tile, anyhow::Error>(Tile { image, x, y })
             })
-        })).await;
+        }))
+        .await;
 
         for i in bodies {
             match i {
@@ -134,7 +149,7 @@ impl Options {
         Ok(images)
     }
 
-    async fn build_image(&self) -> Result<DynamicImage> {
+    pub async fn build_image(&self) -> Result<DynamicImage> {
         let tiles = self.get_images().await?;
         let count = self.level()?.1;
         let mut image = RgbaImage::new(SIZE * count, SIZE * count);
@@ -150,17 +165,32 @@ impl Options {
         Ok(image::DynamicImage::ImageRgba8(image))
     }
 
-    async fn build_wallpaper(&self, width: u32, height: u32) -> Result<DynamicImage> {
-        let image = self.build_image().await?;
+    pub async fn build_wallpaper(
+        &self,
+        width: u32,
+        height: u32,
+        image: &DynamicImage,
+    ) -> Result<DynamicImage> {
         let scale_factor = height as f32 / image.height() as f32;
         let new_size = image.height() as f32 * scale_factor;
         dbg!(scale_factor, new_size);
 
-        let mut new_image = image::imageops::resize(&image, new_size as u32, new_size as u32, imageops::FilterType::Lanczos3);
+        let mut new_image = image::imageops::resize(
+            image,
+            new_size as u32,
+            new_size as u32,
+            imageops::FilterType::Lanczos3,
+        );
         let x = (width - new_image.width()) / 2;
         let y = (height - new_image.height()) / 2;
 
-        dbg!("Resized: {},{}. Into {},{}", new_image.width(), new_image.height(), x, y);
+        dbg!(
+            "Resized: {},{}. Into {},{}",
+            new_image.width(),
+            new_image.height(),
+            x,
+            y
+        );
 
         let mut wallpaper = RgbaImage::new(width, height);
         wallpaper.copy_from(&mut new_image, x, y)?;
@@ -171,19 +201,39 @@ impl Options {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use std::sync::Arc;
-    use tokio::runtime::Runtime;
-
-    use crate::*;
-
-    #[test]
-    fn run() -> Result<()> {
-        let runtime = Runtime::new()?;
-        let options = Options::default();
-        runtime.block_on(options.build_wallpaper(3840, 2160))?;
-
-        Ok(())
-    }
+fn single_wallpaper(width: u32, height: u32, quality: u32) -> Result<DynamicImage> {
+    let runtime = Runtime::new()?;
+    let options = Options { zoom: quality, ..Default::default() };
+    runtime.block_on(async {
+        let image = options.build_image().await?;
+        let wallpaper = options.build_wallpaper(width, height, &image).await?;
+        Ok::<DynamicImage, anyhow::Error>(wallpaper)
+    })
 }
+
+fn extern_save_file(file: *const c_char, image: DynamicImage) -> Result<()> {
+    let path = unsafe { CStr::from_ptr(file) };
+    image.save_with_format(path.to_str()?, ImageFormat::Jpeg)?;
+
+    Ok(())
+}
+
+#[no_mangle]
+pub extern fn single_wallpaper_file(width: u32, height: u32, quality: u32, file: *const c_char) -> *mut c_char {
+    let res = single_wallpaper(width, height, quality);
+
+    match res {
+        Ok(image) => {
+            match extern_save_file(file, image) {
+                Ok(()) => CString::new("Success"),
+                Err(e) => CString::new(format!("Failed, {}", e))
+            }
+        },
+        Err(e) => {
+            CString::new(format!("Failed, {}", e))
+        }
+    }.unwrap().into_raw()
+}
+
+#[cfg(test)]
+mod tests {}
