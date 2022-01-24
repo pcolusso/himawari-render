@@ -18,8 +18,8 @@ struct LatestPayload {
 
 fn get_tile(time: DateTime<chrono::offset::FixedOffset>, size: u32, level: u32, x: u32, y: u32) -> Result<DynamicImage, Box<Error>> {
     let mut retries = 3;
-    let base_url = format!("http://himawari8.nict.go.jp/img/D531106/{}d/{}/{}_{}_{}.png", level, size, time.format("%Y/%m/%d/%H%M%S"), x, y);
-
+    let base_url = format!("https://himawari8.nict.go.jp/img/D531106/{}d/{}/{}_{}_{}.png", level, size, time.format("%Y/%m/%d/%H0000"), x, y);
+    dbg!(&base_url);
     while retries > 0 {
         if let Ok(response) = reqwest::get(&base_url) {
             let mut response = reqwest::get(&base_url)?;
@@ -42,9 +42,10 @@ struct Tile {
     y: u32
 }
 
-pub fn assemble(level: u32) -> Result<RgbaImage, Box<Error>> {
-    let mut query_latest = reqwest::get("http://himawari8-dl.nict.go.jp/himawari8/img/D531106/latest.json")?;
+pub fn assemble(level: u32) -> Result<RgbaImage, Box<dyn Error>> {
+    let mut query_latest = reqwest::get("https://himawari8.nict.go.jp/img/D531107/latest.json")?;
     let payload: LatestPayload = query_latest.json()?;
+    dbg!(&payload);
     let time_with_tz = format!("{} +1000", payload.date);
     let time = DateTime::parse_from_str(&time_with_tz, "%Y-%m-%d %H:%M:%S %z")?;
     let tile_width = 550;
