@@ -213,6 +213,7 @@ fn single_wallpaper(width: u32, height: u32, quality: u32) -> Result<DynamicImag
 
 fn extern_save_file(file: *const c_char, image: DynamicImage) -> Result<()> {
     let path = unsafe { CStr::from_ptr(file) };
+    dbg!(&path);
     image.save_with_format(path.to_str()?, ImageFormat::Jpeg)?;
 
     Ok(())
