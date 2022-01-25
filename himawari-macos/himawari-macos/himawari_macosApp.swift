@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct himawari_macosApp: App {
+    @State public var manager = WallpaperConfig()
+    
+    init() {
+        manager.enroll()
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(manager: $manager)
         }
     }
 }
