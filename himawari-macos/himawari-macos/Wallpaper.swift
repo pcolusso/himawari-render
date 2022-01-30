@@ -8,9 +8,7 @@
 import Cocoa
 
 class WallpaperConfig : ObservableObject {
-    // TODO: Use a library folder instead.
-    let baseUrl = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("Downloads")
+    let baseUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
     var filename: String
     @Published var width: UInt32
     @Published var height: UInt32
@@ -49,38 +47,26 @@ class WallpaperConfig : ObservableObject {
     }
     
     func discover_resolutions() -> [Resolution] {
-        var displayCount: UInt32 = 0
-        let default_resolution = [Resolution(width: 3840, height: 2160)]
-        var discovered_resolutions = Set<Resolution>()
-
-        // get the number of active displays
-        guard CGGetActiveDisplayList(0, nil, &displayCount) == .success else {
-            return default_resolution
-        }
-    
-        // Populate list of display IDs.
-        let allocated = Int(displayCount)
-        let active_displays = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: allocated)
-        guard CGGetActiveDisplayList(displayCount, active_displays, &displayCount) == .success else {
-            return default_resolution
-        }
+        let screens = NSScreen.screens
+        var resolutions = Set<Resolution>()
         
-        // transform unsafe mutable pointer
-        var displays = [CGDirectDisplayID]()
-        for i in 0..<allocated {
-            let display = active_displays[i]
+        for screen in screens {
+            let width = (screen.frame.width * screen.backingScaleFactor).rounded()
+            let height = (screen.frame.height * screen.backingScaleFactor).rounded()
+            let resolution = Resolution(width: UInt32(width), height: UInt32(height))
             
-            // get display resolution
-            let width = CGDisplayPixelsWide(display)
-            let height = CGDisplayPixelsHigh(display)
-            print("display: \(width), \(height)")
-            discovered_resolutions.insert(Resolution(width: UInt32(width), height: UInt32(height)))
+            resolutions.insert(resolution)
         }
         
-        // deallocate
-        active_displays.deallocate()
+        return Array(resolutions)
+    }
+    
+    func clear_files() {
+        let files = try! FileManager.default.contentsOfDirectory(at: baseUrl, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)
         
-        return Array(discovered_resolutions)
+        for f in files where f.pathExtension == "jpg" {
+            try! FileManager.default.removeItem(at: f)
+        }
     }
     
     @objc func generate_wallpaper() {
