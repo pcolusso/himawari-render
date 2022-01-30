@@ -322,11 +322,7 @@ mod wasm {
             )
             .into(),
         );
-        let image_data_temp = ImageData::new_with_u8_clamped_array_and_sh(
-            clamped_buf,
-            image.width(),
-            image.height(),
-        )?;
+        let image_data_temp = ImageData::new_with_u8_clamped_array_and_sh(clamped_buf, width, height)?;
         context.put_image_data(&image_data_temp, 0.0, 0.0)?;
 
         Ok(())
