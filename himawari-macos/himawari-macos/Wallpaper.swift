@@ -49,18 +49,38 @@ class WallpaperConfig : ObservableObject {
     }
     
     func discover_resolutions() -> [Resolution] {
-        let screens = NSScreen.screens
-        var resolutions = Set<Resolution>()
-        
-        for screen in screens {
-            let width = screen.frame.width.rounded()
-            let height = screen.frame.height.rounded()
-            let resolution = Resolution(width: UInt32(width), height: UInt32(height))
-            
-            resolutions.insert(resolution)
+        var displayCount: UInt32 = 0
+        let default_resolution = [Resolution(width: 3840, height: 2160)]
+        var discovered_resolutions = Set<Resolution>()
+
+        // get the number of active displays
+        guard CGGetActiveDisplayList(0, nil, &displayCount) == .success else {
+            return default_resolution
+        }
+    
+        // Populate list of display IDs.
+        let allocated = Int(displayCount)
+        let active_displays = UnsafeMutablePointer<CGDirectDisplayID>.allocate(capacity: allocated)
+        guard CGGetActiveDisplayList(displayCount, active_displays, &displayCount) == .success else {
+            return default_resolution
         }
         
-        return Array(resolutions)
+        // transform unsafe mutable pointer
+        var displays = [CGDirectDisplayID]()
+        for i in 0..<allocated {
+            let display = active_displays[i]
+            
+            // get display resolution
+            let width = CGDisplayPixelsWide(display)
+            let height = CGDisplayPixelsHigh(display)
+            print("display: \(width), \(height)")
+            discovered_resolutions.insert(Resolution(width: UInt32(width), height: UInt32(height)))
+        }
+        
+        // deallocate
+        active_displays.deallocate()
+        
+        return Array(discovered_resolutions)
     }
     
     @objc func generate_wallpaper() {
@@ -72,7 +92,7 @@ class WallpaperConfig : ObservableObject {
         let newPath = baseUrl.appendingPathComponent(newFile) // Create a new path to pass
         let resolutions = discover_resolutions()
         
-        let res = single_wallpaper_file(width, height, quality, newPath.path)
+        let res = single_wallpaper_file(resolutions[0].width, resolutions[0].height, quality, newPath.path)
         let resStr = String(cString: res!)
         print("Res: \(resStr)")
         
