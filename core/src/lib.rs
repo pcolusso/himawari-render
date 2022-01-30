@@ -1,14 +1,11 @@
-use anyhow::anyhow;
-use anyhow::Result;
+
+use anyhow::{Result, Error, anyhow};
 use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike, Utc};
-use futures::future::*;
-use futures::{stream, StreamExt};
 use image::{
     imageops, io::Reader as ImageReader, DynamicImage, GenericImage, GenericImageView, ImageFormat,
     RgbaImage,
 };
 use serde::Deserialize;
-use tokio::runtime::Runtime;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::io::Cursor;
@@ -18,7 +15,6 @@ const SIZE: u32 = 550;
 
 pub struct Options {
     date: DateOptions,
-    debug: bool,
     infrared: bool,
     zoom: u32,
     timeout: Duration,
@@ -33,7 +29,6 @@ impl Default for Options {
     fn default() -> Self {
         Options {
             date: DateOptions::Latest,
-            debug: false,
             infrared: false,
             zoom: 2,
             timeout: Duration::seconds(30),
@@ -65,7 +60,6 @@ impl Options {
             _ => Err(anyhow!("Invalid zoom level")),
         }
     }
-
     async fn get_date(&self) -> Result<NaiveDateTime> {
         let image_type = if self.infrared {
             "INFRARED_FULL"
@@ -123,9 +117,10 @@ impl Options {
             }
         }
 
-        let bodies = join_all(urls.into_iter().map(|url| {
-            let client = client.clone();
-            tokio::spawn(async move {
+        #[cfg(feature = "wasm")]
+        {
+            let mut bodies = vec!();
+            for url in urls {
                 let resp = client.get(url.0).send().await?;
                 let bytes = resp.bytes().await?;
                 let mut reader = ImageReader::new(Cursor::new(bytes));
@@ -133,16 +128,40 @@ impl Options {
                 let image = reader.decode()?;
                 let x = url.1;
                 let y = url.2;
-                Ok::<Tile, anyhow::Error>(Tile { image, x, y })
-            })
-        }))
-        .await;
+                bodies.push(Ok::<Tile, Error>(Tile { image, x, y }))
+            }
 
-        for i in bodies {
-            match i {
-                Ok(Ok(image)) => images.push(image),
-                Ok(Err(e)) => Err(anyhow!("Issue processing images, {}", e))?,
-                Err(e) => Err(anyhow!("Error scheduling image download, {}", e))?,
+            for i in bodies {
+                match i {
+                    Ok(image) => images.push(image),
+                    Err(e) => Err(anyhow!("Issue processing images, {}", e))?,
+                }
+            }
+        }
+        #[cfg(not(feature = "wasm"))]
+        {
+            let bodies = futures::future::join_all(urls.into_iter().map(|url| {
+                    let client = client.clone();
+                    tokio::spawn(async move {
+                        let resp = client.get(url.0).send().await?;
+                        let bytes = resp.bytes().await?;
+                        let mut reader = ImageReader::new(Cursor::new(bytes));
+                        reader.set_format(ImageFormat::Png);
+                        let image = reader.decode()?;
+                        let x = url.1;
+                        let y = url.2;
+                        Ok::<Tile, Error>(Tile { image, x, y })
+                    })
+
+            }))
+            .await;
+
+            for i in bodies {
+                match i {
+                    Ok(Ok(image)) => images.push(image),
+                    Ok(Err(e)) => Err(anyhow!("Issue processing images, {}", e))?,
+                    Err(e) => Err(anyhow!("Error scheduling image download, {}", e))?,
+                }
             }
         }
 
@@ -159,8 +178,6 @@ impl Options {
         }
 
         imageops::colorops::contrast_in_place(&mut image, 0.5);
-
-        image.save_with_format("planet.jpg", ImageFormat::Jpeg)?;
 
         Ok(image::DynamicImage::ImageRgba8(image))
     }
@@ -185,7 +202,6 @@ impl Options {
         let y = (height - new_image.height()) / 2;
 
         dbg!(
-            "Resized: {},{}. Into {},{}",
             new_image.width(),
             new_image.height(),
             x,
@@ -201,8 +217,9 @@ impl Options {
     }
 }
 
+#[cfg(not(feature = "wasm"))]
 fn single_wallpaper(width: u32, height: u32, quality: u32) -> Result<DynamicImage> {
-    let runtime = Runtime::new()?;
+    let runtime = tokio::runtime::Runtime::new()?;
     let options = Options { zoom: quality, ..Default::default() };
     runtime.block_on(async {
         let image = options.build_image().await?;
@@ -211,6 +228,8 @@ fn single_wallpaper(width: u32, height: u32, quality: u32) -> Result<DynamicImag
     })
 }
 
+
+#[cfg(not(feature = "wasm"))]
 fn extern_save_file(file: *const c_char, image: DynamicImage) -> Result<()> {
     let path = unsafe { CStr::from_ptr(file) };
     dbg!(&path);
@@ -219,6 +238,7 @@ fn extern_save_file(file: *const c_char, image: DynamicImage) -> Result<()> {
     Ok(())
 }
 
+#[cfg(not(feature = "wasm"))]
 #[no_mangle]
 pub extern fn single_wallpaper_file(width: u32, height: u32, quality: u32, file: *const c_char) -> *mut c_char {
     let res = single_wallpaper(width, height, quality);
@@ -236,5 +256,20 @@ pub extern fn single_wallpaper_file(width: u32, height: u32, quality: u32, file:
     }.unwrap().into_raw()
 }
 
-#[cfg(test)]
-mod tests {}
+
+#[cfg(feature = "wasm")]
+mod wasm {
+    use crate::Options;
+    use wasm_bindgen::prelude::*;
+    use anyhow::Error;
+    use js_sys::{Uint8Array, Array};
+
+    #[wasm_bindgen]
+    pub async fn create_wallpaper(height: u32, width: u32, quality: u32) -> Option<&'static [u8]> {
+        let options = Options { zoom: quality, ..Default::default() };
+        let image = options.build_image().await.unwrap();
+        let wallpaper = options.build_wallpaper(width, height, &image).await.unwrap();
+
+        Some(Array::from(wallpaper.into_bytes().as_slice()))
+    }
+}

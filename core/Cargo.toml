@@ -7,12 +7,18 @@ edition = "2018"
 [dependencies]
 chrono  = { version = "0.4", features = ["serde"] }
 serde   = { version = "1.0.135", features = ["derive"] }
-tokio   = { version = "1.15.0", features = ["full"] }
 reqwest = { version = "0.11.9", features = ["json"] }
 image = "0.23.14"
 anyhow = "1.0.53"
-tempdir = "0.3.7"
-futures = "0.3.19"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+futures = { version = "0.3.19" }
+tokio   = { version = "1.15.0", features = ["full"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = { version = "0.2.63", features = ["serde-serialize"] }
+wasm-bindgen-futures = { version = "0.4.1" }
+js-sys = "0.3.56"
 
 [lib]
 name = "himawari_render"
@@ -22,3 +28,6 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [[bin]]
 name = "himwari_cli"
 path = "src/bin.rs"
+
+[features]
+wasm = []
