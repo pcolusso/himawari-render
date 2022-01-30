@@ -1,5 +1,4 @@
-
-use anyhow::{Result, Error, anyhow};
+use anyhow::{anyhow, Error, Result};
 use chrono::{Datelike, Duration, NaiveDate, NaiveDateTime, Timelike, Utc};
 use image::{
     imageops, io::Reader as ImageReader, DynamicImage, GenericImage, GenericImageView, ImageFormat,
@@ -119,7 +118,7 @@ impl Options {
 
         #[cfg(feature = "wasm")]
         {
-            let mut bodies = vec!();
+            let mut bodies = vec![];
             for url in urls {
                 let resp = client.get(url.0).send().await?;
                 let bytes = resp.bytes().await?;
@@ -141,18 +140,17 @@ impl Options {
         #[cfg(not(feature = "wasm"))]
         {
             let bodies = futures::future::join_all(urls.into_iter().map(|url| {
-                    let client = client.clone();
-                    tokio::spawn(async move {
-                        let resp = client.get(url.0).send().await?;
-                        let bytes = resp.bytes().await?;
-                        let mut reader = ImageReader::new(Cursor::new(bytes));
-                        reader.set_format(ImageFormat::Png);
-                        let image = reader.decode()?;
-                        let x = url.1;
-                        let y = url.2;
-                        Ok::<Tile, Error>(Tile { image, x, y })
-                    })
-
+                let client = client.clone();
+                tokio::spawn(async move {
+                    let resp = client.get(url.0).send().await?;
+                    let bytes = resp.bytes().await?;
+                    let mut reader = ImageReader::new(Cursor::new(bytes));
+                    reader.set_format(ImageFormat::Png);
+                    let image = reader.decode()?;
+                    let x = url.1;
+                    let y = url.2;
+                    Ok::<Tile, Error>(Tile { image, x, y })
+                })
             }))
             .await;
 
@@ -201,17 +199,10 @@ impl Options {
         let x = (width - new_image.width()) / 2;
         let y = (height - new_image.height()) / 2;
 
-        dbg!(
-            new_image.width(),
-            new_image.height(),
-            x,
-            y
-        );
+        dbg!(new_image.width(), new_image.height(), x, y);
 
         let mut wallpaper = RgbaImage::new(width, height);
         wallpaper.copy_from(&mut new_image, x, y)?;
-
-        wallpaper.save_with_format("wallpaper.jpg", ImageFormat::Jpeg)?;
 
         Ok(image::DynamicImage::ImageRgba8(wallpaper))
     }
@@ -220,14 +211,16 @@ impl Options {
 #[cfg(not(feature = "wasm"))]
 fn single_wallpaper(width: u32, height: u32, quality: u32) -> Result<DynamicImage> {
     let runtime = tokio::runtime::Runtime::new()?;
-    let options = Options { zoom: quality, ..Default::default() };
+    let options = Options {
+        zoom: quality,
+        ..Default::default()
+    };
     runtime.block_on(async {
         let image = options.build_image().await?;
         let wallpaper = options.build_wallpaper(width, height, &image).await?;
         Ok::<DynamicImage, anyhow::Error>(wallpaper)
     })
 }
-
 
 #[cfg(not(feature = "wasm"))]
 fn extern_save_file(file: *const c_char, image: DynamicImage) -> Result<()> {
@@ -240,36 +233,102 @@ fn extern_save_file(file: *const c_char, image: DynamicImage) -> Result<()> {
 
 #[cfg(not(feature = "wasm"))]
 #[no_mangle]
-pub extern fn single_wallpaper_file(width: u32, height: u32, quality: u32, file: *const c_char) -> *mut c_char {
+pub extern "C" fn single_wallpaper_file(
+    width: u32,
+    height: u32,
+    quality: u32,
+    file: *const c_char,
+) -> *mut c_char {
     let res = single_wallpaper(width, height, quality);
 
     match res {
-        Ok(image) => {
-            match extern_save_file(file, image) {
-                Ok(()) => CString::new("Success"),
-                Err(e) => CString::new(format!("Failed, {}", e))
-            }
+        Ok(image) => match extern_save_file(file, image) {
+            Ok(()) => CString::new("Success"),
+            Err(e) => CString::new(format!("Failed, {}", e)),
         },
-        Err(e) => {
-            CString::new(format!("Failed, {}", e))
-        }
-    }.unwrap().into_raw()
+        Err(e) => CString::new(format!("Failed, {}", e)),
+    }
+    .unwrap()
+    .into_raw()
 }
-
 
 #[cfg(feature = "wasm")]
 mod wasm {
     use crate::Options;
-    use wasm_bindgen::prelude::*;
     use anyhow::Error;
-    use js_sys::{Uint8Array, Array};
+    use image::GenericImageView;
+    use wasm_bindgen::{prelude::*, Clamped, JsCast};
+    use wasm_bindgen_futures::JsFuture;
+    use web_sys::ImageData;
 
     #[wasm_bindgen]
-    pub async fn create_wallpaper(height: u32, width: u32, quality: u32) -> Option<&'static [u8]> {
-        let options = Options { zoom: quality, ..Default::default() };
-        let image = options.build_image().await.unwrap();
-        let wallpaper = options.build_wallpaper(width, height, &image).await.unwrap();
+    pub async fn create_wallpaper(
+        width: u32,
+        height: u32,
+        quality: u32,
+        canvas: String,
+    ) -> Result<(), JsValue> {
+        web_sys::console::log_1(
+            &format!("Starting... Creating an image of {}x{}", width, height).into(),
+        );
+        // Generate image...
+        let options = Options {
+            zoom: quality,
+            ..Default::default()
+        };
+        let image = options
+            .build_image()
+            .await
+            .expect("Could not generate image");
+        web_sys::console::log_1(&"Image created".into());
 
-        Some(Array::from(wallpaper.into_bytes().as_slice()))
+        let wallpaper = options
+            .build_wallpaper(width, height, &image)
+            .await
+            .expect("Could not generate wallpaper");
+        web_sys::console::log_1(
+            &format!(
+                "Wallpaper created; dimensions: {}x{}",
+                wallpaper.width(),
+                wallpaper.height(),
+            )
+            .into(),
+        );
+
+        let mut rgba_image = wallpaper.to_rgba8();
+        
+        // Set the canvas
+        let window = web_sys::window().expect("Could not get window");
+        web_sys::console::log_1(&"Window found".into());
+        let document = window.document().expect("Could not get document");
+        web_sys::console::log_1(&"Document found".into());
+        let canvas = document
+            .get_element_by_id(&canvas)
+            .expect("Could not get canvas")
+            .dyn_into::<web_sys::HtmlCanvasElement>()?;
+        web_sys::console::log_1(&"Canvas found".into());
+        let context = canvas
+            .get_context("2d")?
+            .unwrap()
+            .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
+        web_sys::console::log_1(&"Context found".into());
+        
+        let clamped_buf: Clamped<&[u8]> = Clamped(rgba_image.as_raw());
+        web_sys::console::log_1(
+            &format!(
+                "Copying to canvas with expected dimensions {}x{}",
+                wallpaper.width(),
+                wallpaper.height()
+            )
+            .into(),
+        );
+        let image_data_temp = ImageData::new_with_u8_clamped_array_and_sh(
+            clamped_buf,
+            image.width(),
+            image.height(),
+        )?;
+        context.put_image_data(&image_data_temp, 0.0, 0.0)?;
+
+        Ok(())
     }
 }
