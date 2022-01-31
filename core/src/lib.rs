@@ -17,11 +17,11 @@ use std::os::raw::c_char;
 const SIZE: u32 = 550;
 
 pub struct Options {
-    date: DateOptions,
-    debug: bool,
-    infrared: bool,
-    zoom: u32,
-    timeout: Duration,
+    pub date: DateOptions,
+    pub debug: bool,
+    pub infrared: bool,
+    pub zoom: u32,
+    pub timeout: Duration,
 }
 
 pub enum DateOptions {

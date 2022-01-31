@@ -13,6 +13,7 @@ image = "0.23.14"
 anyhow = "1.0.53"
 tempdir = "0.3.7"
 futures = "0.3.19"
+clap = { version = "3.0.13", features = ["derive"] }
 
 [lib]
 name = "himawari_render"
@@ -20,5 +21,5 @@ path = "src/lib.rs"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [[bin]]
-name = "himwari_cli"
+name = "himawari_cli"
 path = "src/bin.rs"
