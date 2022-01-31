@@ -1,0 +1,22 @@
+name: Update
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+
+jobs:
+  update-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          ref: github-pages
+      - name: Download CLI
+        run: curl -LO https://github.com/pcolusso/himawari-render/releases/download/tip/himawari_cli
+      - name: Make executable
+        run: chmod +x himawari_cli
+      - name: Run CLI
+        run: ./himawari_cli image --location docs/image.jpg
+      - name: Publish update
+        run: git add docs/image.jpg && git commit -m "update image" && git push
