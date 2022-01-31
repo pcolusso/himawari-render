@@ -20,7 +20,8 @@ jobs:
         toolchain: stable
     - uses: Swatinem/rust-cache@v1
       name: Cache
-      working-directory: core
+      with:
+        working-directory: core
     - name: Build
       run: cargo build --verbose --release
       working-directory: core
