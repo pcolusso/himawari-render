@@ -31,7 +31,7 @@ jobs:
           ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
           ${{ runner.os }}-cargo-target
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --verbose --release
       working-directory: core
     - name: Create info file
       run: |
