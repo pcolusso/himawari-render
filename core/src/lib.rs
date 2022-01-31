@@ -169,7 +169,7 @@ impl Options {
         height: u32,
         image: &DynamicImage,
     ) -> Result<DynamicImage> {
-        let scale_factor = height as f32 / image.height() as f32;
+        let scale_factor = std::cmp::min(width, height) as f32 / image.height() as f32;
         let new_size = image.height() as f32 * scale_factor;
         dbg!(scale_factor, new_size);
 
@@ -179,11 +179,11 @@ impl Options {
             new_size as u32,
             imageops::FilterType::Lanczos3,
         );
+
         let x = (width - new_image.width()) / 2;
         let y = (height - new_image.height()) / 2;
 
         dbg!(
-            "Resized: {},{}. Into {},{}",
             new_image.width(),
             new_image.height(),
             x,
@@ -192,8 +192,6 @@ impl Options {
 
         let mut wallpaper = RgbaImage::new(width, height);
         wallpaper.copy_from(&mut new_image, x, y)?;
-
-        wallpaper.save_with_format("wallpaper.jpg", ImageFormat::Jpeg)?;
 
         Ok(image::DynamicImage::ImageRgba8(wallpaper))
     }
