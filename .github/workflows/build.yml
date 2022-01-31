@@ -1,8 +1,10 @@
-name: Build Core
+name: Build
+
 on:
   push:
-    branches: [ main ]
-    paths: [ core ]
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -12,23 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Cargo Cache
-      uses: actions/cache@v1
+    - uses: actions-rs/toolchain@v1
       with:
-        path: ~/.cargo
-        key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-${{ hashFiles('Cargo.toml') }}
-          ${{ runner.os }}-cargo
-
-    - name: Cargo Target Cache
-      uses: actions/cache@v1
+        profile: minimal
+        toolchain: stable
+    - uses: Swatinem/rust-cache@v1
+      name: Cache
       with:
-        path: target
-        key: ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-cargo-target-${{ hashFiles('Cargo.toml') }}
-          ${{ runner.os }}-cargo-target
+        working-directory: core
     - name: Build
+      run: cargo build --verbose --release
       working-directory: core
-      run: cargo build
+    - name: Create info file
+      run: |
+        echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: $(date +"%Y-%m-%dT%H:%M:%SZ")" \
+        > core/target/release/himawari-build-info.txt
+    - name: Update nightly release
+      uses: eine/tip@master
+      with:
+        tag: nightly
+        rm: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: core/target/release/*himawari*
+

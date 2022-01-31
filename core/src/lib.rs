@@ -160,8 +160,6 @@ impl Options {
 
         imageops::colorops::contrast_in_place(&mut image, 0.5);
 
-        image.save_with_format("planet.jpg", ImageFormat::Jpeg)?;
-
         Ok(image::DynamicImage::ImageRgba8(image))
     }
 
