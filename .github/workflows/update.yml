@@ -20,7 +20,7 @@ jobs:
       - name: Run CLI
         run: ./himawari_cli image --location docs/image.jpg
       - name: Generate iPhone wallpaper
-        run: ./himawari_cli wallpaper -q 2 1300 2532 --output docs/iPhoneX.jpg
+        run: ./himawari_cli wallpaper -q 2 1170 3000 --output docs/iPhoneX.jpg
       - name: Publish update
         uses: EndBug/add-and-commit@v8
         with:
