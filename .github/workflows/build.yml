@@ -1,4 +1,4 @@
-name: Rust
+name: Build
 
 on:
   push:
@@ -36,12 +36,12 @@ jobs:
     - name: Create info file
       run: |
         echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: $(date +"%Y-%m-%dT%H:%M:%SZ")" \
-        > core/target/release/info.txt
+        > core/target/release/himawari-build-info.txt
     - name: Update nightly release
       uses: eine/tip@master
       with:
         tag: nightly
         rm: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        files: core/target/release/*.*
+        files: core/target/release/*himawari*
 
