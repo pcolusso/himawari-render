@@ -21,4 +21,9 @@ jobs:
       - name: Run CLI
         run: ./himawari_cli image --location docs/image.jpg
       - name: Publish update
-        run: git add docs/image.jpg && git commit -m "update image" && git push
+        uses: EndBug/add-and-commit@v8
+        with:
+          add: docs/image.jpg
+          author_name: GitHub Actions
+          author_email: noone@example.com
+          message: 'The world keeps turning'
