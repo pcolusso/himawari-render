@@ -13,14 +13,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: github-pages
-      - name: Install git-filter-repo
+      - name: Clean repo
         uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-          cache: 'pip'
-      - run: pip install --user git-filter-repo
-      - name: Clean repo
-        run: |
+      - run: |
+          pip install --user git-filter-repo &&
           git filter-repo --path-glob '*.jpg' --invert-paths --refs github-pages
       - name: Setup CLI
         run: |
