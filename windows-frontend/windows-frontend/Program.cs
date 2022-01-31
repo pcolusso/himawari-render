@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using Microsoft.DirextX.Direct3D;
 
 namespace windows_frontend
 {
