@@ -28,3 +28,7 @@ jobs:
           author_name: GitHub Actions
           author_email: noone@example.com
           message: 'The world keeps turning'
+      - name: Push update notification
+        env:
+          URLS: ${{ secrets.PUSH_TRIGGER }}
+        run: curl -X POST $URLS
