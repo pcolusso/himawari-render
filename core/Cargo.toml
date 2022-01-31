@@ -1,0 +1,25 @@
+[package]
+name = "himawari-render"
+version = "0.1.0"
+authors = ["Paul Colusso <paulcolusso@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+chrono  = { version = "0.4", features = ["serde"] }
+serde   = { version = "1.0.135", features = ["derive"] }
+tokio   = { version = "1.15.0", features = ["full"] }
+reqwest = { version = "0.11.9", features = ["json"] }
+image = "0.23.14"
+anyhow = "1.0.53"
+tempdir = "0.3.7"
+futures = "0.3.19"
+clap = { version = "3.0.13", features = ["derive"] }
+
+[lib]
+name = "himawari_render"
+path = "src/lib.rs"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "himawari_cli"
+path = "src/bin.rs"
