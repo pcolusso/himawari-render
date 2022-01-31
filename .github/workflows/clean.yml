@@ -1,0 +1,30 @@
+name: Clean
+
+on:
+  schedule:
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          ref: github-pages
+      - name: Clean repo
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - run: |
+          pip install --user git-filter-repo &&
+          git filter-repo --path-glob '*.jpg' --invert-paths --refs github-pages
+      - name: Force push
+        uses: EndBug/add-and-commit@v8
+        with:
+          add: docs/*
+          author_name: GitHub Actions
+          author_email: noone@example.com
+          message: 'Cleaning up...'
+          push: origin github-pages --force

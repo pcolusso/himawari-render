@@ -13,13 +13,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: github-pages
-      - name: Clean repo
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-      - run: |
-          pip install --user git-filter-repo &&
-          git filter-repo --path-glob '*.jpg' --invert-paths --refs github-pages
       - name: Setup CLI
         run: |
           curl -LO https://github.com/pcolusso/himawari-render/releases/download/tip/himawari_cli &&
@@ -27,7 +20,7 @@ jobs:
       - name: Run CLI
         run: ./himawari_cli image --location docs/image.jpg
       - name: Generate iPhone wallpaper
-        run: ./himawari_cli wallpaper -q 2 1170 2532 --output docs/iPhoneX.jpg
+        run: ./himawari_cli wallpaper -q 2 1300 2532 --output docs/iPhoneX.jpg
       - name: Publish update
         uses: EndBug/add-and-commit@v8
         with:
@@ -35,4 +28,3 @@ jobs:
           author_name: GitHub Actions
           author_email: noone@example.com
           message: 'The world keeps turning'
-          push: origin github-pages --force
