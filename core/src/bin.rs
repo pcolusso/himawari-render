@@ -15,11 +15,14 @@ enum Commands {
 
 #[derive(clap::Args)]
 struct WallpaperCommand {
-  #[clap(short, long, default_value_t = 1920)]
+  #[clap(default_value_t = 1170 )]
   width: u32,
-  #[clap(short, long, default_value_t = 1080)]
+  #[clap(default_value_t = 2532 )]
   height: u32,
-  location: PathBuf
+  #[clap(short, long, default_value_t = 2)]
+  quality: u32,
+  #[clap(short, long, default_value = "image.jpg")]
+  output: PathBuf
 }
 
 #[derive(clap::Args)]
@@ -40,10 +43,11 @@ async fn main() -> Result<()> {
       let image = options.build_image().await?;
       image.save_with_format(opts.location, ImageFormat::Jpeg)?;
     },
-    Commands::Wallpaper(_) => {
-      let options = Options::default();
+    Commands::Wallpaper(opts) => {
+      let options = Options { zoom: opts.quality, ..Options::default() };
       let image = options.build_image().await?;
-      options.build_wallpaper(3840, 2160, &image).await?;
+      let wallpaper = options.build_wallpaper(opts.width, opts.height, &image).await?;
+      wallpaper.save_with_format(opts.output, ImageFormat::Jpeg)?;
     }
   }
   
