@@ -19,7 +19,7 @@ jobs:
           python-version: '3.9'
       - run: |
           pip install --user git-filter-repo &&
-          git filter-repo --strip-blobs-bigger-than 200K --path docs
+          git filter-repo --strip-blobs-bigger-than 200K --path-glob 'docs/*.jpg' --invert-paths
       - name: Force push
         uses: EndBug/add-and-commit@v8
         with:
