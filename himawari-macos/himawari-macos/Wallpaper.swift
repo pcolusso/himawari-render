@@ -6,6 +6,7 @@
 //
 
 import Cocoa
+import Network
 
 class WallpaperConfig : ObservableObject {
     let baseUrl = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
@@ -14,6 +15,7 @@ class WallpaperConfig : ObservableObject {
     @Published var height: UInt32
     var wallpaperExists: Bool
     var quality: UInt32
+    var connected = false
     
     init() {
         filename = WallpaperConfig.newFilename()
@@ -31,6 +33,21 @@ class WallpaperConfig : ObservableObject {
         // Set up a timer to fire every 10 minites.
         Timer.scheduledTimer(timeInterval: 600.0, target: self, selector: #selector(self.generate_wallpaper), userInfo: nil, repeats: true)
         print("Enrollment made")
+        
+        // Need to also subscribe to updates when the network comes offline/online.
+        let monitor = NWPathMonitor()
+        monitor.pathUpdateHandler = { pathUpdateHandler in
+            if pathUpdateHandler.status == .satisfied {
+                print("Internet connection online.")
+                self.connected = true
+            } else {
+                print("There's no internet connection, halting updates")
+                self.connected = false
+            }
+        }
+        
+        let queue = DispatchQueue(label: "InternetConnectionMonitor")
+        monitor.start(queue: queue)
     }
     
     func url() -> URL {
@@ -70,6 +87,10 @@ class WallpaperConfig : ObservableObject {
     }
     
     @objc func generate_wallpaper() {
+        while(!connected) {
+            print("No connection, delaying refresh")
+            sleep(10)
+        }
         print("Generating wallpaper...")
         let fileManager = FileManager.default
         let oldPath = url()

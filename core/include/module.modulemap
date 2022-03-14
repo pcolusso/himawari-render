@@ -1,0 +1,4 @@
+module HimawariRenderCore {
+  header "himawari-render.h"
+  export *
+}

@@ -14,8 +14,8 @@
             filePath = "himawari-macos/Wallpaper.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "105"
-            endingLineNumber = "105"
+            startingLineNumber = "126"
+            endingLineNumber = "126"
             landmarkName = "set_wallpaper()"
             landmarkType = "7">
          </BreakpointContent>
